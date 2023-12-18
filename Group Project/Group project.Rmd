@@ -1,0 +1,406 @@
+---
+title: "Group Project"
+author: "Yingqi Huang"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+# LOAD DATA
+
+library(tidyverse)
+ds <-
+  read.csv("~/Group Project/csv/gsod_indices_v7.csv")
+```
+
+```{r}
+# REFINE DATA TO RELEVANT VARIABLES
+
+ds2 <-
+  ds |>
+  select(COWcode, year, country_name, subregion_name, subregion, v_11_04, v_11_05, v_13_03, v_13_05, v_14_03, v_15_02, v_15_03, v_16_02, inclu_suff_est, v_13_01, v_22_12, v_22_13, v_22_14, v_33_04, v_22_19) |>
+  distinct()
+
+ds2
+```
+
+```{r}
+# RENAME
+dsf <- ds2 |>
+  rename("Country ID" = "COWcode", "Year" = "year", "Country" = "country_name", "Subregion" = "subregion_name", "Subregion ID" = "subregion", "Election government intimidation" = "v_11_04", "Election free and fair" = "v_11_05", "Opposition parties’ autonomy" = "v_13_03", "Competitiveness of participation" = "v_13_05", "Openness of executive recruitment" = "v_14_03", "Executive oversight" = "v_15_02", "Legislature investigates in practice" = "v_15_03", "Subnational elections free and fair" = "v_16_02",  "Inclusive suffrage" = "inclu_suff_est", "Party ban" = "v_13_01", "Print/broadcast censorship effort" = "v_22_12", "Harassment of journalists" = "v_22_13", "Media self censorship" = "v_22_14", "Media corrupt" = "v_33_04", "Media freedom" = "v_22_19")
+
+
+print(dsf)
+```
+
+```{r}
+#summary statistics
+summary(dsf$Country)
+summary(dsf$Year)
+summary(dsf$`Media freedom`)
+summary(dsf$Subregion)
+table(dsf$`Media freedom`, useNA = "always") |> prop.table()
+```
+
+```{r}
+# Group the data by country and calculate the average for each group
+library(dplyr)
+dsf_average <- dsf |> 
+  group_by(Country) |> 
+  summarize_at(vars("Election government intimidation", "Election free and fair", "Opposition parties’ autonomy","Competitiveness of participation", "Openness of executive recruitment", "Executive oversight", "Legislature investigates in practice", "Subnational elections free and fair", "Inclusive suffrage", "Party ban", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"), mean, na.rm = TRUE)
+
+print(dsf_average)
+```
+
+## Including Plots
+
+```{r pressure, echo=FALSE}
+library(GGally)
+# Select the columns for the scatterplot matrix
+selected_columns <- c("Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom")
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "blue", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 30, fill = "white", color = "black", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.3, color = "gray", na.rm = TRUE)))
+```
+
+#correlation analysis
+
+```{r}
+
+# Select the columns for the scatterplot matrix
+selected_columns <- c("Election free and fair", "Openness of executive recruitment", "Media self censorship", "Media freedom")
+
+my_colors <- c("#798D74")
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+```
+
+```{r}
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Election free and fair", "Openness of executive recruitment", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom")
+
+
+
+my_colors <- c("#798D74")
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+```
+
+```{r}
+print(unique(dsf_average$`Party ban`))
+
+# correlation matrix between IVs(part of) and Dvs (II)
+selected_columns <- c("Party ban", "Opposition parties’ autonomy", "Print/broadcast censorship effort", "Media self censorship", "Media freedom")
+
+
+
+my_colors <- c("#798D74")
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+```
+
+```{r}
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Election government intimidation", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+my_colors <- c("#798D74")
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Election free and fair", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Opposition parties’ autonomy", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Competitiveness of participation", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Openness of executive recruitment", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Executive oversight", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Legislature investigates in practice", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Subnational elections free and fair", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Inclusive suffrage", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+
+# correlation matrix between IVs(part of) and Dvs
+selected_columns <- c("Party ban", "Print/broadcast censorship effort", "Harassment of journalists", "Media self censorship", "Media corrupt", "Media freedom"
+                      )
+
+# Create the scatterplot matrix
+ggpairs(dsf_average[, selected_columns],
+        columnLabels = selected_columns,
+        upper = list(continuous = wrap("cor", method = "spearman", color = "#798D74", na.rm = TRUE)),
+        diag = list(continuous = wrap("barDiag", bins = 20, fill = "#798D74", color = "white", na.rm = TRUE)), 
+        lower = list(continuous = wrap("smooth_loess", alpha = 0.5, color = "#798D74", na.rm = TRUE)))
+
+```
+
+### Load World Map data.
+
+```{r}
+world <-
+  map_data("world")
+```
+
+### Rename some countries to match map data.
+
+```{r}
+ds2 <-
+  ds2 |>
+  mutate(country_name = str_replace(country_name, "United States", "USA")) |>
+  mutate(country_name = str_replace(country_name, "United Kingdom", "UK")) |>
+  mutate(country_name = str_replace(country_name, "Türkiye", "Turkey"))
+```
+
+### Democracy indicator average change from 1975-2022.
+
+```{r}
+dsf_1975 <-
+  ds2 |>
+    filter(year == 1975) |>
+  group_by(country_name) |>
+  summarise(
+    v_11_04, v_11_05, v_13_03, v_13_05, v_14_03, v_15_02, v_15_03, v_16_02, inclu_suff_est, v_13_01
+  ) |>
+  distinct()
+
+dsf_1975 <-
+  dsf_1975 |>
+  mutate(democracy_indicators = (v_11_04+v_11_05+v_13_03+v_13_05+v_14_03+v_15_02+v_15_03+v_16_02+inclu_suff_est+v_13_01)/10)
+```
+
+### DEMOCRACY CHANGE.
+
+```{r}
+dsf_1975 <-
+  ds2 |>
+    filter(year == 1975) |>
+  group_by(country_name) |>
+  summarise(
+    v_11_04, v_11_05, v_13_03, v_13_05, v_14_03, v_15_02, v_15_03, v_16_02, inclu_suff_est, v_13_01
+  ) |>
+  distinct()
+
+dsf_1975 <-
+  dsf_1975 |>
+  mutate(democracy_indicators = (v_11_04+v_11_05+v_13_03+v_13_05+v_14_03+v_15_02+v_15_03+v_16_02+inclu_suff_est+v_13_01)/10)
+
+dsf_2022 <-
+  ds2 |>
+    filter(year == 2022) |>
+  group_by(country_name) |>
+  summarise(
+    v_11_04, v_11_05, v_13_03, v_13_05, v_14_03, v_15_02, v_15_03, v_16_02, inclu_suff_est, v_13_01
+  ) |>
+  distinct()
+
+dsf_2022 <-
+  dsf_2022 |>
+  mutate(democracy_indicators1 = (v_11_04+v_11_05+v_13_03+v_13_05+v_14_03+v_15_02+v_15_03+v_16_02+inclu_suff_est+v_13_01)/10)
+
+dsf_1975_2022 <-
+  merge(dsf_1975, dsf_2022, by="country_name") |>
+  mutate(democracy_indicators_change = democracy_indicators1 - democracy_indicators.x)
+
+world_final1 <-
+  world |>
+  left_join(dsf_1975_2022, by = c("region" = "country_name"))
+
+world_final1 |>
+    ggplot(aes(x = long, y = lat)) +
+  geom_map(
+    map = world,
+    aes(map_id = region, fill = democracy_indicators_change)) +
+    scale_fill_gradient2(low = "#FD4545", mid = "#EFE9DB", high = "#798D74") +
+  labs(title = "1975-2022 Change in Global Democracy",
+       fill = "Average
+Change of
+Democracy
+Indicators") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank())
+```
+
+### PRESS FREEDOM CHANGE
+
+```{r}
+dsf_1975_pf <-
+  ds2 |>
+    filter(year == 1975) |>
+  group_by(country_name) |>
+  summarise(
+    v_22_12, v_22_13, v_22_14, v_33_04, v_22_19
+  ) |>
+  distinct()
+
+dsf_1975_pf <-
+  dsf_1975_pf |>
+  mutate(pf_indicators = (v_22_12+v_22_13+v_22_14+v_33_04+v_22_19)/5)
+
+dsf_2022_pf <-
+  ds2 |>
+    filter(year == 2022) |>
+  group_by(country_name) |>
+  summarise(
+    v_22_12, v_22_13, v_22_14, v_33_04, v_22_19
+  ) |>
+  distinct()
+
+dsf_2022_pf <-
+  dsf_2022_pf |>
+  mutate(pf_indicators1 = (v_22_12+v_22_13+v_22_14+v_33_04+v_22_19)/5)
+
+dsf_pf_1975_2022 <-
+  merge(dsf_1975_pf, dsf_2022_pf, by="country_name") |>
+  mutate(pf_indicators_change = pf_indicators1 - pf_indicators)
+
+world_final2 <-
+  world |>
+  left_join(dsf_pf_1975_2022, by = c("region" = "country_name"))
+
+world_final2 |>
+    ggplot(aes(x = long, y = lat)) +
+  geom_map(
+    map = world,
+    aes(map_id = region, fill = pf_indicators_change)) +
+    scale_fill_gradient2(low = "#FD4545", mid = "#EFE9DB", high = "#798D74") +
+  labs(title = "1975-2022 Change in Global Press Freedom",
+       fill = "Average
+Change of
+Democracy
+Indicators") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        rect = element_blank())
+```
+
+# regression analysis
+
+```{r}
+{r}
+#regression analysis
+formula <- as.formula(paste("v_22_19", "~ v_11_04 + v_11_05 + v_13_03 + v_13_05 + v_14_03 + v_15_02 + v_15_03 + v_16_02 + v_13_01"))
+
+model <- lm(formula, data = dataset)
+
+
+models_list[[variable_descriptions[dep_var]]] <- model
+
+
+lapply(models_list, summary)
+```
